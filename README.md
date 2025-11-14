@@ -75,7 +75,7 @@ sensor.rte_tempo_couleur_actuelle (RTE Tempo)
 
 **RTE Tempo** : HACS > Intégrations > "RTE Tempo" > Installer > Redémarrer > Ajouter intégration
 
-** SQLite Web**: Paramètres > Modules complémentaires > Boutique de Modules complémentaires > "sqlite" > installer
+**SQLite Web** : Paramètres > Modules complémentaires > Boutique de Modules complémentaires > "sqlite" > installer
 
 **pyscript** : [tuto youtube](https://youtu.be/IkoLVc2z9dA?si=OsD-P1yje1jso95B) HACS > Intégrations > "pyscript" > Installer > Redémarrer
 
