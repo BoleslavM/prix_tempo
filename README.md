@@ -359,7 +359,7 @@ template:
 
 ### 📄 Fichier 6 : Automation
 
-Créez `/config/linky_tempo_automation.yaml` :
+Créer l'automatisation
 
 ```yaml
 alias: Linky - Calcul Coût Tempo Quotidien
@@ -387,12 +387,6 @@ mode: single
 
 ## Étape 4 : Script Python
 
-### Créer le dossier
-
-```bash
-mkdir -p /config/pyscript
-```
-
 ### Copier le script
 
 Copiez le fichier `pyscript/linky_tempo_cost.py` fourni dans `/config/pyscript/`
@@ -418,20 +412,8 @@ Ajoutez dans `/config/configuration.yaml` :
 
 ```yaml
 # Configuration Linky + Tempo
-pyscript:
-
-input_number:
-  - !include linky_tempo_pricing.yaml
-  - !include linky_tempo_helpers.yaml
-
-sql:
-  - !include linky_tempo_sql.yaml
-
-template:
-  - !include linky_tempo_sensors_historique.yaml
-  - !include linky_tempo_templates.yaml
-
-automation: !include linky_tempo_automation.yaml
+homeassistant:
+  packages: !include_dir_named packages
 ```
 
 **Note :** Adaptez si vous avez déjà ces sections (fusionnez le contenu).
