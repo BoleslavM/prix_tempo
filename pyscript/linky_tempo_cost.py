@@ -14,7 +14,7 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 
 # ID du statistic Linky (à adapter)
-LINKY_STATISTIC_ID = "linky:14458465866949"
+LINKY_STATISTIC_ID = "linky:xxx"
 
 # Entités RTE Tempo
 TEMPO_COULEUR_ENTITY = "sensor.rte_tempo_couleur_actuelle"
