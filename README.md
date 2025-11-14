@@ -217,7 +217,7 @@ sql:
   - name: "Linky Énergie Totale"
     unique_id: linky_energie_totale
     query: >
-      SELECT ROUND(s.sum / 1000.0, 3)
+      SELECT ROUND(s.sum / 1000.0, 3) as kwh
       FROM statistics s
       JOIN statistics_meta m ON m.id = s.metadata_id
       WHERE m.statistic_id = 'linky:xxx'
@@ -231,7 +231,7 @@ sql:
   - name: "Linky Consommation Hier"
     unique_id: linky_conso_hier
     query: >
-      SELECT ROUND(SUM(s.state) / 1000.0, 3)
+      SELECT ROUND(SUM(s.state) / 1000.0, 3) as kwh
       FROM statistics s
       JOIN statistics_meta m ON m.id = s.metadata_id
       WHERE m.statistic_id = 'linky:xxx'
