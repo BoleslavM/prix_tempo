@@ -441,15 +441,9 @@ Recherchez :
 - `sensor.linky_tarif_actuel` ✅
 - `sensor.linky_cout_total_cumule` ✅
 
-**Note :** Les sensors de couleurs peuvent être "unknown" les premiers jours (attendez 2-3 jours).
+**Note :** Les sensors de couleurs  `sensor.tempo_couleur_hier` et `sensor.tempo_couleur_avant_hier`  doivent être réglé manuellement la premiere fois avec la couleur associée.
 
-### Tester le calcul
 
-**Outils de développement** > **Services**
-
-```yaml
-service: pyscript.calcul_cout_tempo_journee
-```
 
 Vérifiez les logs (**Paramètres** > **Système** > **Journaux**) :
 
@@ -482,9 +476,7 @@ Attendez 2-3 heures pour voir les données.
 
 ### Les sensors sont "unknown"
 
-**Cause :** Pas assez d'historique.
-
-**Solution :** Attendez 2-3 jours que l'historique RTE Tempo se remplisse.
+**Solution :** Les sensors de couleurs  `sensor.tempo_couleur_hier` et `sensor.tempo_couleur_avant_hier`  doivent être réglé manuellement la premiere fois avec la couleur associée.
 
 ### Erreur "LINKY_STATISTIC_ID not found"
 
@@ -578,23 +570,6 @@ On utilise :
 
 ---
 
-## 📝 Points importants
-
-### ✅ À FAIRE :
-
-- Remplacer votre ID Linky dans 2 fichiers
-- Configurer vos heures creuses dans le script Python
-- Ajuster vos tarifs Tempo
-- Attendre 2-3 jours que l'historique se remplisse
-
-### ✅ Architecture utilisée :
-
-- **Trigger-based sensors** (pas de SQL pour les couleurs)
-- **Script Python pyscript** (calcul + backdating)
-- **Aucun input_text**
-- **Aucune automation de sauvegarde**
-
----
 
 ## 🎊 Version
 
@@ -608,14 +583,5 @@ On utilise :
 
 ---
 
-## 📚 Autres fichiers
-
-- **README_LINKY_TEMPO.md** - Documentation de référence complète
-- **RECAP_NETTOYAGE.md** - Résumé du nettoyage effectué
-- **configuration_example.yaml** - Exemple de configuration
-- **lovelace_card_example.yaml** - Exemples de cartes
-- **diagnostic_linky_tempo.sh** - Script de diagnostic
-
----
 
 **Bon monitoring ! 📊⚡💶**
