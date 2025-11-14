@@ -362,20 +362,25 @@ template:
 Créez `/config/linky_tempo_automation.yaml` :
 
 ```yaml
-automation:
-  - id: linky_calcul_cout_tempo
-    alias: "Linky - Calcul Coût Tempo Quotidien"
-    description: "Calcule le coût de la consommation de la veille selon les tarifs Tempo"
-    trigger:
-      - platform: time
-        at: "07:00:00"
-    condition: []
-    action:
-      - delay:
-          minutes: 2
-      - service: pyscript.calcul_cout_tempo_journee
-        data: {}
-    mode: single
+alias: Linky - Calcul Coût Tempo Quotidien
+description: ""
+triggers:
+  - trigger: time
+    at: "07:00:00"
+    weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+      - sat
+      - sun
+conditions: []
+actions:
+  - action: pyscript.calcul_cout_tempo_journee
+    metadata: {}
+    data: {}
+mode: single
 ```
 
 ---
