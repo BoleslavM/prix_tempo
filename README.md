@@ -208,7 +208,7 @@ input_number:
 
 ### 📄 Fichier 3 : Sensors SQL Linky
 
-Créez des entités dasn apparails > nouvel appareil > SQL :
+Créez des entités dans apareils > nouvel appareil > SQL :
 
 **⚠️ REMPLACEZ `linky:xxx` par VOTRE ID !**
 
