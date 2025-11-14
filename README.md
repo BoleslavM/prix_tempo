@@ -71,11 +71,13 @@ sensor.rte_tempo_couleur_actuelle (RTE Tempo)
 
 ### Si vous n'avez pas ces intégrations :
 
-**ha-linky** : Paramètres > Appareils et services > Ajouter > "Linky" > Identifiants Enedis
+**ha-linky** : [tuto youtube](https://youtu.be/j_PNaZmhXcU?si=cuBwK3gPe6a-Upq9)
 
 **RTE Tempo** : HACS > Intégrations > "RTE Tempo" > Installer > Redémarrer > Ajouter intégration
 
-**pyscript** : HACS > Intégrations > "pyscript" > Installer > Redémarrer
+** SQLite Web**: Paramètres > Modules complémentaires > Boutique de Modules complémentaires > "sqlite" > installer
+
+**pyscript** : [tuto youtube](https://youtu.be/IkoLVc2z9dA?si=OsD-P1yje1jso95B) HACS > Intégrations > "pyscript" > Installer > Redémarrer
 
 ---
 
@@ -83,13 +85,13 @@ sensor.rte_tempo_couleur_actuelle (RTE Tempo)
 
 ## Étape 1 : Trouver votre ID Linky
 
-Ouvrez un terminal SSH et exécutez :
+Ouvrez un SQLite web :
 
 ```bash
-sqlite3 /config/home-assistant_v2.db "SELECT statistic_id FROM statistics_meta WHERE statistic_id LIKE '%linky%';"
+SELECT statistic_id FROM statistics_meta WHERE statistic_id LIKE '%linky%';
 ```
 
-Vous obtiendrez : `linky:14458465866949`
+Vous obtiendrez : `linky:xxx`
 
 **⚠️ NOTEZ CE NUMÉRO !**
 
@@ -120,7 +122,7 @@ input_number:
     min: 0
     max: 1
     step: 0.0001
-    initial: 0.1296  # ⚠️ MODIFIEZ
+    initial: 0.1494  # ⚠️ MODIFIEZ
     unit_of_measurement: "€/kWh"
     icon: mdi:currency-eur
 
@@ -129,7 +131,7 @@ input_number:
     min: 0
     max: 1
     step: 0.0001
-    initial: 0.1056  # ⚠️ MODIFIEZ
+    initial: 0.1232  # ⚠️ MODIFIEZ
     unit_of_measurement: "€/kWh"
     icon: mdi:currency-eur
 
@@ -138,7 +140,7 @@ input_number:
     min: 0
     max: 1
     step: 0.0001
-    initial: 0.1486  # ⚠️ MODIFIEZ
+    initial: 0.1730  # ⚠️ MODIFIEZ
     unit_of_measurement: "€/kWh"
     icon: mdi:currency-eur
 
@@ -147,7 +149,7 @@ input_number:
     min: 0
     max: 1
     step: 0.0001
-    initial: 0.1216  # ⚠️ MODIFIEZ
+    initial: 0.1391  # ⚠️ MODIFIEZ
     unit_of_measurement: "€/kWh"
     icon: mdi:currency-eur
 
@@ -156,7 +158,7 @@ input_number:
     min: 0
     max: 1
     step: 0.0001
-    initial: 0.5486  # ⚠️ MODIFIEZ
+    initial: 0.6468  # ⚠️ MODIFIEZ
     unit_of_measurement: "€/kWh"
     icon: mdi:currency-eur
 
@@ -165,7 +167,7 @@ input_number:
     min: 0
     max: 1
     step: 0.0001
-    initial: 0.1336  # ⚠️ MODIFIEZ
+    initial: 0.1460  # ⚠️ MODIFIEZ
     unit_of_measurement: "€/kWh"
     icon: mdi:currency-eur
 
@@ -206,9 +208,9 @@ input_number:
 
 ### 📄 Fichier 3 : Sensors SQL Linky
 
-Créez `/config/linky_tempo_sql.yaml` :
+Créez des entités dasn apparails > nouvel appareil > SQL :
 
-**⚠️ REMPLACEZ `linky:14458465866949` par VOTRE ID !**
+**⚠️ REMPLACEZ `linky:xxx` par VOTRE ID !**
 
 ```yaml
 sql:
@@ -218,7 +220,7 @@ sql:
       SELECT ROUND(s.sum / 1000.0, 3)
       FROM statistics s
       JOIN statistics_meta m ON m.id = s.metadata_id
-      WHERE m.statistic_id = 'linky:14458465866949'
+      WHERE m.statistic_id = 'linky:xxx'
       ORDER BY s.start_ts DESC
       LIMIT 1;
     column: "kwh"
@@ -232,7 +234,7 @@ sql:
       SELECT ROUND(SUM(s.state) / 1000.0, 3)
       FROM statistics s
       JOIN statistics_meta m ON m.id = s.metadata_id
-      WHERE m.statistic_id = 'linky:14458465866949'
+      WHERE m.statistic_id = 'linky:xxx'
         AND s.start_ts >= CAST(strftime('%s', datetime('now', '-1 day', 'start of day')) AS INTEGER)
         AND s.start_ts < CAST(strftime('%s', datetime('now', 'start of day')) AS INTEGER)
     column: "kwh"
@@ -247,10 +249,21 @@ Créez `/config/linky_tempo_sensors_historique.yaml` :
 
 ```yaml
 template:
+  # Sensors déclenchés par l'heure (pas par changement d'état)
   - trigger:
-      - platform: state
-        entity_id: sensor.rte_tempo_couleur_actuelle
-      - platform: homeassistant
+      # 1) Juste avant le basculement de journée (on capture "hier")
+      - id: roll_hier
+        platform: time
+        at: "05:59:59"
+
+      # 2) Juste après le basculement (on décale "avant-hier")
+      - id: roll_avant_hier
+        platform: time
+        at: "06:00:01"
+
+      # 3) Au démarrage de Home Assistant (restauration)
+      - id: startup
+        platform: homeassistant
         event: start
 
     sensor:
@@ -304,14 +317,14 @@ template:
           {% set couleur = states('sensor.rte_tempo_couleur_actuelle')|lower %}
           {% set hc = is_state('binary_sensor.rte_tempo_heures_creuses', 'on') %}
           {% if couleur == 'bleu' %}
-            {% if hc %}{{ states('input_number.tempo_bleu_hc')|float(0.1056) }}
-            {% else %}{{ states('input_number.tempo_bleu_hp')|float(0.1296) }}{% endif %}
+            {% if hc %}{{ states('input_number.tempo_bleu_hc')|float(0.1232) }}
+            {% else %}{{ states('input_number.tempo_bleu_hp')|float(0.1494) }}{% endif %}
           {% elif couleur == 'blanc' %}
-            {% if hc %}{{ states('input_number.tempo_blanc_hc')|float(0.1216) }}
-            {% else %}{{ states('input_number.tempo_blanc_hp')|float(0.1486) }}{% endif %}
+            {% if hc %}{{ states('input_number.tempo_blanc_hc')|float(0.1391) }}
+            {% else %}{{ states('input_number.tempo_blanc_hp')|float(0.1730) }}{% endif %}
           {% elif couleur == 'rouge' %}
-            {% if hc %}{{ states('input_number.tempo_rouge_hc')|float(0.1336) }}
-            {% else %}{{ states('input_number.tempo_rouge_hp')|float(0.5486) }}{% endif %}
+            {% if hc %}{{ states('input_number.tempo_rouge_hc')|float(0.1460) }}
+            {% else %}{{ states('input_number.tempo_rouge_hp')|float(0.6468) }}{% endif %}
           {% else %}
             0.15
           {% endif %}
