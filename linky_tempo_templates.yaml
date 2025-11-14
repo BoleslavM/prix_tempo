@@ -1,0 +1,88 @@
+# ============================================================
+# Templates pour Tarification Tempo
+# ============================================================
+
+template:
+  - sensor:
+      # Tarif actuel en temps réel (pour affichage)
+      - name: "Linky Tarif Actuel"
+        unique_id: linky_tarif_actuel
+        unit_of_measurement: "€/kWh"
+        device_class: monetary
+        state: >
+          {% set couleur = states('sensor.rte_tempo_couleur_actuelle')|lower %}
+          {% set hc = is_state('binary_sensor.rte_tempo_heures_creuses', 'on') %}
+          {% if couleur == 'bleu' %}
+            {% if hc %}{{ states('input_number.tempo_bleu_hc')|float(0.1056) }}
+            {% else %}{{ states('input_number.tempo_bleu_hp')|float(0.1296) }}{% endif %}
+          {% elif couleur == 'blanc' %}
+            {% if hc %}{{ states('input_number.tempo_blanc_hc')|float(0.1216) }}
+            {% else %}{{ states('input_number.tempo_blanc_hp')|float(0.1486) }}{% endif %}
+          {% elif couleur == 'rouge' %}
+            {% if hc %}{{ states('input_number.tempo_rouge_hc')|float(0.1336) }}
+            {% else %}{{ states('input_number.tempo_rouge_hp')|float(0.5486) }}{% endif %}
+          {% else %}
+            0.15
+          {% endif %}
+        attributes:
+          couleur: "{{ states('sensor.rte_tempo_couleur_actuelle') }}"
+          type_heure: "{{ 'HC' if is_state('binary_sensor.rte_tempo_heures_creuses', 'on') else 'HP' }}"
+          friendly_name: "Tarif {{ 'HC' if is_state('binary_sensor.rte_tempo_heures_creuses', 'on') else 'HP' }} - Jour {{ states('sensor.rte_tempo_couleur_actuelle') }}"
+        icon: mdi:cash
+
+      # ============================================================
+      # Sensors pour le Tableau Énergie
+      # ============================================================
+
+      # Coût total avec state_class pour le Tableau Énergie
+      - name: "Linky Coût Total Cumulé"
+        unique_id: linky_cout_total_cumule
+        unit_of_measurement: "€"
+        device_class: monetary
+        state_class: total_increasing
+        state: "{{ states('input_number.linky_cout_total')|float(0) }}"
+        icon: mdi:cash-multiple
+
+      # Coût du jour (pour le Tableau Énergie)
+      - name: "Linky Coût Journalier"
+        unique_id: linky_cout_journalier
+        unit_of_measurement: "€"
+        device_class: monetary
+        state_class: total_increasing
+        state: "{{ states('input_number.linky_cout_hier')|float(0) }}"
+        icon: mdi:cash
+
+      # ============================================================
+      # Statistiques additionnelles
+      # ============================================================
+
+      # Prix moyen par kWh
+      - name: "Linky Prix Moyen kWh"
+        unique_id: linky_prix_moyen_kwh
+        unit_of_measurement: "€/kWh"
+        state: >
+          {% set energie = states('sensor.linky_energie_totale')|float(0) %}
+          {% set cout = states('input_number.linky_cout_total')|float(0) %}
+          {% if energie > 0 %}
+            {{ (cout / energie)|round(4) }}
+          {% else %}
+            0
+          {% endif %}
+        icon: mdi:calculator
+
+      # Estimation coût mensuel
+      - name: "Linky Estimation Coût Mois"
+        unique_id: linky_estimation_cout_mois
+        unit_of_measurement: "€"
+        device_class: monetary
+        state: >
+          {% set cout_hier = states('input_number.linky_cout_hier')|float(0) %}
+          {% set jour_mois = now().day %}
+          {% set jours_mois = now().replace(day=1).replace(month=now().month % 12 + 1) - now().replace(day=1) %}
+          {% set nb_jours = jours_mois.days %}
+          {% if jour_mois > 0 and cout_hier > 0 %}
+            {{ ((cout_hier * nb_jours / jour_mois))|round(2) }}
+          {% else %}
+            0
+          {% endif %}
+        icon: mdi:calendar-month

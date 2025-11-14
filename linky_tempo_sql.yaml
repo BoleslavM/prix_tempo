@@ -1,0 +1,88 @@
+# ============================================================
+# Capteurs SQL pour Coût Linky avec Tempo
+# ============================================================
+# IMPORTANT : Cette solution nécessite que l'intégration RTE Tempo
+# stocke l'historique des couleurs dans la base de données.
+# ============================================================
+
+sql:
+  # Énergie totale (vous l'avez déjà)
+  - name: "Linky Énergie Totale"
+    unique_id: linky_energie_totale
+    query: >
+      SELECT ROUND(s.sum / 1000.0, 3)
+      FROM statistics s
+      JOIN statistics_meta m ON m.id = s.metadata_id
+      WHERE m.statistic_id = 'linky:14458465866949'
+      ORDER BY s.start_ts DESC
+      LIMIT 1;
+    column: "kwh"
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing
+
+  # Coût total cumulé (approche simplifiée)
+  # Cette version utilise un tarif moyen - voir solution avancée ci-dessous
+  - name: "Linky Coût Total (Simplifié)"
+    unique_id: linky_cout_total_simple
+    query: >
+      SELECT ROUND(s.sum / 1000.0 * 0.15, 2)
+      FROM statistics s
+      JOIN statistics_meta m ON m.id = s.metadata_id
+      WHERE m.statistic_id = 'linky:14458465866949'
+      ORDER BY s.start_ts DESC
+      LIMIT 1;
+    column: "euros"
+    unit_of_measurement: "€"
+    device_class: monetary
+    state_class: total_increasing
+
+  # Consommation du jour précédent (données reçues à 06:30)
+  - name: "Linky Consommation Hier"
+    unique_id: linky_conso_hier
+    query: >
+      SELECT ROUND(SUM(s.state) / 1000.0, 3)
+      FROM statistics s
+      JOIN statistics_meta m ON m.id = s.metadata_id
+      WHERE m.statistic_id = 'linky:14458465866949'
+        AND s.start_ts >= CAST(strftime('%s', datetime('now', '-1 day', 'start of day')) AS INTEGER)
+        AND s.start_ts < CAST(strftime('%s', datetime('now', 'start of day')) AS INTEGER)
+    column: "kwh"
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total
+
+  # Consommation de la journée Tempo précédente (06h à 06h)
+  - name: "Linky Consommation Journée Tempo Hier"
+    unique_id: linky_conso_journee_tempo_hier
+    query: >
+      SELECT ROUND(SUM(s.state) / 1000.0, 3)
+      FROM statistics s
+      JOIN statistics_meta m ON m.id = s.metadata_id
+      WHERE m.statistic_id = 'linky:14458465866949'
+        AND s.start_ts >= CAST(strftime('%s', datetime('now', '-1 day', 'start of day', '+6 hours')) AS INTEGER)
+        AND s.start_ts < CAST(strftime('%s', datetime('now', 'start of day', '+6 hours')) AS INTEGER)
+    column: "kwh"
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total
+
+  # Dernières 24 données horaires (pour debug)
+  - name: "Linky Dernières Données"
+    unique_id: linky_dernieres_donnees
+    query: >
+      SELECT GROUP_CONCAT(
+        datetime(s.start_ts, 'unixepoch', 'localtime') || ': ' ||
+        ROUND(s.state, 0) || 'Wh',
+        ' | '
+      )
+      FROM (
+        SELECT s.start_ts, s.state
+        FROM statistics s
+        JOIN statistics_meta m ON m.id = s.metadata_id
+        WHERE m.statistic_id = 'linky:14458465866949'
+        ORDER BY s.start_ts DESC
+        LIMIT 24
+      ) s
+    column: "data"
+    unit_of_measurement: ""

@@ -1,0 +1,56 @@
+# ============================================================
+# Sensors pour l'historique des couleurs Tempo
+# ============================================================
+# Version SANS SQL : Utilise des template sensors déclenchés
+# Se met à jour quand sensor.rte_tempo_couleur_actuelle change
+# ============================================================
+
+template:
+  # Sensor trigger-based pour stocker l'historique des couleurs
+  - trigger:
+      # Se déclenche quand la couleur Tempo change (vers 6h00)
+      - platform: state
+        entity_id: sensor.rte_tempo_couleur_actuelle
+
+      # Se déclenche aussi au démarrage de HA
+      - platform: homeassistant
+        event: start
+
+    sensor:
+      # Couleur Tempo d'hier (J-1)
+      # Prend la valeur de "avant-hier" (décalage)
+      - name: "Tempo Couleur Hier"
+        unique_id: tempo_couleur_hier_trigger
+        state: >
+          {% if trigger.platform == 'state' %}
+            {{ states('sensor.tempo_couleur_avant_hier') }}
+          {% else %}
+            {{ states('sensor.tempo_couleur_hier') if states('sensor.tempo_couleur_hier') != 'unknown' else 'BLEU' }}
+          {% endif %}
+        icon: mdi:calendar-minus
+
+      # Couleur Tempo d'avant-hier (J-2)
+      # Prend l'ANCIENNE valeur de rte_tempo_couleur_actuelle
+      - name: "Tempo Couleur Avant-hier"
+        unique_id: tempo_couleur_avant_hier_trigger
+        state: >
+          {% if trigger.platform == 'state' and trigger.from_state is not none %}
+            {{ trigger.from_state.state }}
+          {% else %}
+            {{ states('sensor.tempo_couleur_avant_hier') if states('sensor.tempo_couleur_avant_hier') != 'unknown' else 'BLEU' }}
+          {% endif %}
+        icon: mdi:calendar-minus-outline
+
+  # Sensor classique pour l'historique 3 jours
+  - sensor:
+      - name: "Tempo Historique 3 Jours"
+        unique_id: tempo_historique_3_jours
+        state: >
+          Aujourd'hui: {{ states('sensor.rte_tempo_couleur_actuelle') }} |
+          Hier: {{ states('sensor.tempo_couleur_hier') }} |
+          Avant-hier: {{ states('sensor.tempo_couleur_avant_hier') }}
+        icon: mdi:calendar-range
+        attributes:
+          aujourd_hui: "{{ states('sensor.rte_tempo_couleur_actuelle') }}"
+          hier: "{{ states('sensor.tempo_couleur_hier') }}"
+          avant_hier: "{{ states('sensor.tempo_couleur_avant_hier') }}"

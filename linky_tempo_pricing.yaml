@@ -1,0 +1,78 @@
+# ============================================================
+# Configuration Linky + Tempo pour Home Assistant
+# ============================================================
+# À intégrer dans votre configuration.yaml :
+# input_number: !include linky_tempo_pricing.yaml
+# template: !include linky_tempo_templates.yaml
+# sql: !include linky_tempo_sql.yaml
+# ============================================================
+
+# Définition des tarifs Tempo (en €/kWh)
+# À ajuster selon votre contrat EDF
+input_number:
+  # Tarifs Jour BLEU
+  tempo_bleu_hp:
+    name: "Tempo Bleu - Heures Pleines"
+    min: 0
+    max: 1
+    step: 0.0001
+    initial: 0.1296  # Exemple de tarif 2024
+    unit_of_measurement: "€/kWh"
+    icon: mdi:currency-eur
+
+  tempo_bleu_hc:
+    name: "Tempo Bleu - Heures Creuses"
+    min: 0
+    max: 1
+    step: 0.0001
+    initial: 0.1056  # Exemple de tarif 2024
+    unit_of_measurement: "€/kWh"
+    icon: mdi:currency-eur
+
+  # Tarifs Jour BLANC
+  tempo_blanc_hp:
+    name: "Tempo Blanc - Heures Pleines"
+    min: 0
+    max: 1
+    step: 0.0001
+    initial: 0.1486  # Exemple de tarif 2024
+    unit_of_measurement: "€/kWh"
+    icon: mdi:currency-eur
+
+  tempo_blanc_hc:
+    name: "Tempo Blanc - Heures Creuses"
+    min: 0
+    max: 1
+    step: 0.0001
+    initial: 0.1216  # Exemple de tarif 2024
+    unit_of_measurement: "€/kWh"
+    icon: mdi:currency-eur
+
+  # Tarifs Jour ROUGE
+  tempo_rouge_hp:
+    name: "Tempo Rouge - Heures Pleines"
+    min: 0
+    max: 1
+    step: 0.0001
+    initial: 0.5486  # Exemple de tarif 2024
+    unit_of_measurement: "€/kWh"
+    icon: mdi:currency-eur
+
+  tempo_rouge_hc:
+    name: "Tempo Rouge - Heures Creuses"
+    min: 0
+    max: 1
+    step: 0.0001
+    initial: 0.1336  # Exemple de tarif 2024
+    unit_of_measurement: "€/kWh"
+    icon: mdi:currency-eur
+
+  # Abonnement mensuel
+  tempo_abonnement:
+    name: "Abonnement Tempo mensuel"
+    min: 0
+    max: 50
+    step: 0.01
+    initial: 12.86  # Exemple tarif 2024
+    unit_of_measurement: "€/mois"
+    icon: mdi:currency-eur
