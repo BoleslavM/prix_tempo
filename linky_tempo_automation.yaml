@@ -1,30 +1,20 @@
-# ============================================================
-# Automation pour calcul du coût Linky avec Tempo
-# ============================================================
-# Cette automation se déclenche chaque matin après l'import des données Linky
-# et calcule le coût de la veille selon les tarifs Tempo
-# ============================================================
-# PRÉREQUIS :
-# - pyscript installé (HACS)
-# - pyscript/linky_tempo_cost.py copié dans /config/pyscript/
-# - Helpers linky_cout_total et linky_cout_hier créés
-# ============================================================
+alias: Linky - Calcul Coût Tempo Quotidien
+description: ""
+triggers:
+  - trigger: time
+    at: "07:00:00"
+    weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+      - sat
+      - sun
+conditions: []
+actions:
+  - action: pyscript.calcul_cout_tempo_journee
+    metadata: {}
+    data: {}
+mode: single
 
-automation:
-  # Automation qui calcule le coût chaque matin
-  - id: linky_calcul_cout_tempo
-    alias: "Linky - Calcul Coût Tempo Quotidien"
-    description: "Calcule le coût de la consommation de la veille selon les tarifs Tempo"
-    trigger:
-      - platform: time
-        at: "07:00:00"  # Après l'import Linky à 06:30
-    condition: []
-    action:
-      # On attend que les données Linky soient bien importées
-      - delay:
-          minutes: 2
-
-      # Appel du script Python pyscript
-      - service: pyscript.calcul_cout_tempo_journee
-        data: {}
-    mode: single
