@@ -5,7 +5,7 @@ sql:
   # Énergie totale (vous l'avez déjà)
   - name: "linky_energie_totale"
     query: >
-      SELECT ROUND(s.sum / 1000.0, 3)
+      SELECT ROUND(s.sum / 1000.0, 3) AS kwh
       FROM statistics s
       JOIN statistics_meta m ON m.id = s.metadata_id
       WHERE m.statistic_id = 'linky:xxx'
@@ -20,7 +20,7 @@ sql:
   # Consommation du jour précédent (données reçues à 06:30)
   - name: "linky_conso_hier"
     query: >
-      SELECT ROUND(SUM(s.state) / 1000.0, 3)
+      SELECT ROUND(SUM(s.state) / 1000.0, 3) AS kwh
       FROM statistics s
       JOIN statistics_meta m ON m.id = s.metadata_id
       WHERE m.statistic_id = 'linky:xxx'
